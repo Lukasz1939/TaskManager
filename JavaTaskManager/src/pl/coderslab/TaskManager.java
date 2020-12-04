@@ -1,9 +1,14 @@
 package pl.coderslab;
+import org.apache.commons.lang3.math.NumberUtils;
+
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -28,12 +33,17 @@ public class TaskManager {
                 tasks = writeTasks(tasks);
                 break;
             case "remove":
+                    tasks = removeTask(tasks);
                 break;
             case "list":
                 for (String[] task : tasks) {
                     System.out.println(String.join(" ", task));
                 }
                 break;
+            case "exit":
+                    System.out.println("Saving data");
+                    saveTasks("tasks.csv", tasks);
+                    break;
                 default:
                     System.out.println("Please select a correct option.");
                 }
@@ -50,7 +60,7 @@ public class TaskManager {
             System.out.println("Brak pliku źródłowego");
         }else{
             for(String line: Files.readAllLines(path)){
-                String taskNumber = Integer.toString(tasks.length + 1);
+                String taskNumber = tasks.length +",";
                 line = taskNumber + line;
                 String[] splitedLine = line.split(",");
                 tasks = Arrays.copyOf(tasks, tasks.length + 1);
@@ -63,7 +73,7 @@ public class TaskManager {
     public static String[][] writeTasks(String[][] tasks){
         Scanner scanner = new Scanner(System.in);
         String[] newTask = new String[4];
-        newTask[0] = (tasks.length + 1) + ":a ";
+        newTask[0] = Integer.toString(tasks.length);
         System.out.println("Please add task description");
         String line = scanner.nextLine();
         newTask[1]=line;
@@ -78,18 +88,54 @@ public class TaskManager {
         return tasks;
     }
 
-    public static String[][] removeTask(String[][] tasks){
+    public static String[][] removeTask(String[][] tasks)throws IndexOutOfBoundsException{
         Scanner scanner = new Scanner(System.in);
         System.out.println("Jaki numer ma zadanie które chcesz usunąć?");
-        return null;
-    }
-    public static int getNum(Scanner scanner){
-        while(!scanner.hasNextInt()){
-            scanner.next();
-            System.out.println("Podaj liczbę");
-
+        String number = Integer.toString(getNum(scanner, tasks.length - 1));
+        String[][] afterRmv = new String[tasks.length - 1][];
+        int indexToAdd = 0;
+        for (String[] task : tasks) {
+            if (!task[0].equals(number)) {
+                afterRmv[indexToAdd] = task;
+                indexToAdd++;
+            }
         }
-        int num = scanner.nextInt();
+        for (int i = 0; i < afterRmv.length; i++) {
+            afterRmv[i][0]= Integer.toString(i);
+        }
+        return afterRmv;
+    }
+
+    public static int getNum(Scanner scanner, int max){
+        String toParse = scanner.next();
+        while(!NumberUtils.isParsable(toParse)||Integer.parseInt(toParse)>max||Integer.parseInt(toParse)<0){
+            System.out.println("Podaj liczbę między 0 a " + max);
+            toParse = scanner.next();
+        }
+        int num = Integer.parseInt(toParse);
         return num;
     }
+
+    public static void saveTasks(String filePath, String[][] tasks){
+        Path path = Paths.get(filePath);
+        List<String> toWrite = new ArrayList<>();
+        for (String[] task:tasks) {
+            String line = "";
+            for (int i = 0; i < task.length; i++) {
+                if(i>0 && i<3){
+                     line += task[i] +", ";
+                }else if(i==3){
+                    line += task[i];
+                }
+            }
+            toWrite.add(line);
+        }
+        try {
+            Files.write(path, toWrite);
+        }catch (IOException e){
+            e.printStackTrace();
+            System.out.println("Nie można zapisać pliku");
+        }
+    }
+
 }
