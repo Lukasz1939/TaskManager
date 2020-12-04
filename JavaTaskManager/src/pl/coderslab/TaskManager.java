@@ -21,12 +21,13 @@ public class TaskManager {
         tasks = readTasks(filePath);
     }catch (IOException e){
         e.printStackTrace();
-        System.out.println("nie znalazłem pliku");
+        System.out.println("Can't find source");
     }
         Scanner scan = new Scanner(System.in);
     String command;
     do {
-        System.out.println("Please select an option: \nadd\nremove\nlist\nexit");
+        System.out.println(ConsoleColors.BLUE + "Please select an option: \n");
+        System.out.println(ConsoleColors.RESET + "add\nremove\nlist\nexit");
         command = scan.nextLine();
         switch (command) {
             case "add":
@@ -36,12 +37,10 @@ public class TaskManager {
                     tasks = removeTask(tasks);
                 break;
             case "list":
-                for (String[] task : tasks) {
-                    System.out.println(String.join(" ", task));
-                }
+                showTasks(tasks);
                 break;
             case "exit":
-                    System.out.println("Saving data");
+                System.out.println(ConsoleColors.RED +"Bye bye");
                     saveTasks("tasks.csv", tasks);
                     break;
                 default:
@@ -80,7 +79,7 @@ public class TaskManager {
         System.out.println("Please add task due date");
         line = scanner.nextLine();
         newTask[2]=line;
-        System.out.println("Is your task important?");
+        System.out.println("Is your task important?true/false");
         line = scanner.nextLine();
         newTask[3]=line;
         tasks = Arrays.copyOf(tasks, tasks.length + 1);
@@ -135,6 +134,13 @@ public class TaskManager {
         }catch (IOException e){
             e.printStackTrace();
             System.out.println("Nie można zapisać pliku");
+        }
+    }
+
+    public static void showTasks(String[][] tasks){
+        for (String[] task:tasks) {
+            String toShow = task[0]+" : " + task[1] + " " + task[2] + " " + task[3];
+            System.out.println(toShow);
         }
     }
 
